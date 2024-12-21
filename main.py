@@ -23,21 +23,14 @@ os.environ["OPENAI_API_KEY"] = openai_key
 os.environ["TAVILY_API_KEY"] = tavily_key
 
 
-def file_filter(file_path: str) -> bool:
-    return file_path.endswith(".mdx")
-
-
-loader = GitLoader(
-    clone_url="https://github.com/langchain-ai/langchain",
-    repo_path="./langchain",
-    branch="master",
-    file_filter=file_filter,
-)
-
-documents = loader.load()
 
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-db = Chroma.from_documents(documents, embeddings)
+db = Chroma(
+    collection_name="example_collection",
+    embedding_function=embeddings,
+    persist_directory="./chroma_langchain_db",  # Where to save data locally, remove if not necessary
+)
+
 
 prompt = ChatPromptTemplate.from_template('''\
 以下の文脈だけを踏まえて質問に回答してください。
