@@ -16,21 +16,14 @@ set_verbose(True)
 set_debug(True)
 
 openai_key = os.getenv("OPENAI_API_KEY")
-tavily_key = os.getenv("TAVILY_API_KEY")
-
-
 os.environ["OPENAI_API_KEY"] = openai_key
-os.environ["TAVILY_API_KEY"] = tavily_key
-
-
 
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 db = Chroma(
-    collection_name="example_collection",
+    collection_name="japanese_companies",
     embedding_function=embeddings,
     persist_directory="./chroma_langchain_db",  # Where to save data locally, remove if not necessary
 )
-
 
 prompt = ChatPromptTemplate.from_template('''\
 以下の文脈だけを踏まえて質問に回答してください。
@@ -51,4 +44,4 @@ chain = {
     "context": retriever,
 } | prompt | model | StrOutputParser()
 
-chain.invoke("LangChainの概要を教えて")
+chain.invoke("極洋株式会社に関連する企業は？")
