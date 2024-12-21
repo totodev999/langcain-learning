@@ -3,11 +3,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_core.globals import set_debug, set_verbose
 from langchain_core.runnables import RunnablePassthrough
-from langchain_community.document_loaders import GitLoader
 from langchain_chroma import Chroma
 
-
-from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import os
 
@@ -35,13 +32,40 @@ prompt = ChatPromptTemplate.from_template('''\
 質問: {question}
 ''')
 
+
+def log_context(context):
+    # print("------contextAll------")
+    # print(context["context"])
+    for c in context["context"]:
+        print("------contextMin------")
+        print(c)
+
+
+log_context_passthrough = RunnablePassthrough(func=log_context)
+
+
+def log_prompt(prompt: ChatPromptTemplate):
+    print("------propt------")
+    print(prompt.messages)
+    return prompt
+
+
 model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 retriever = db.as_retriever()
 
-chain = {
-    "question": RunnablePassthrough(),
-    "context": retriever,
-} | prompt | model | StrOutputParser()
+chain = (
+    {
+        "question": RunnablePassthrough(),
+        "context": retriever,
+    }
+    | log_context_passthrough
+    | prompt
+    | log_prompt
+    | model
+    | StrOutputParser()
+)
 
-chain.invoke("極洋株式会社に関連する企業は？")
+ai_message = chain.invoke("極洋株式会社に関連する企業は？")
+
+print(ai_message)
